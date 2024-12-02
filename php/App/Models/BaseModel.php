@@ -19,27 +19,24 @@ class BaseModel {
     {
         self::$conn = new \mysqli($this->host, $this->username, $this->password);
         if (self::$conn->connect_errno) {
-            echo "Failed to connect to MySQL: " . self::$conn->connect_error;
+            echo json_encode(['success' => false, 'code' => 500, 'body' => ["message" => "Failed to connect to MySQL: " . self::$conn->connect_error]]);
             exit();
         }
-        echo "success connect host db <br/>";
     }
 
     private function connectDb(string $db)
     {
         $this->connectHostDb();
         if (!self::$conn->select_db($db)) {
-            echo "Failed to select database: " . self::$conn->error;
+            echo json_encode(['success' => false, 'code' => 500, 'body' => ["message" => "Failed to select database: " . self::$conn->error]]);
             exit();
         }
-        echo "success connect Db ({$db}) <br/>";
     }
 
     function __destruct()
     {
         if (self::$conn) {
             self::$conn->close();
-            echo "closing db connection <br/>";
         }
     }
 }
