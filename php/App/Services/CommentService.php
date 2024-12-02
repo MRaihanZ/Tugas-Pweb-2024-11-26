@@ -6,8 +6,9 @@ use App\Models\CommentModel;
 
 class CommentService {
     public static function getCommentWithLimit($data) {
-        $start = $data[0];
-        $limit = $data[1];
-        return $comment = CommentModel::getAllWithLimit($start, $limit);
+        $CommentModel = new CommentModel("root", "", "tugas_pweb_comment", "localhost");
+        $limit = $data[0];
+        $result = $CommentModel::getAllWithLimit("comment", "comment", $limit);
+        return $result;
     }
 }
