@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+    <script type="module" crossorigin src="/assets/index-C-19ZrzP.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CO6xJKxj.css">
+  </head>
+  <body>
+    <div id="root" class="h-screen relative dark:bg-[#09090B]"></div>
+    <script>
+      const lightSwitches = document.querySelectorAll('.light-switch');
+      if (lightSwitches.length > 0) {
+        lightSwitches.forEach((lightSwitch, i) => {
+          if (localStorage.getItem('dark-mode') === 'true') {
+            lightSwitch.checked = true;
+          }
+          lightSwitch.addEventListener('change', () => {
+            const { checked } = lightSwitch;
+            lightSwitches.forEach((el, n) => {
+              if (n !== i) {
+                el.checked = checked;
+              }
+            });
+            if (lightSwitch.checked) {
+              document.documentElement.classList.add('dark');
+              localStorage.setItem('dark-mode', true);
+            } else {
+              document.documentElement.classList.remove('dark');
+              localStorage.setItem('dark-mode', false);
+            }
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
