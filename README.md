@@ -8,7 +8,7 @@ yarn
 ```bash
 yarn dev
 ```
--> http://localhost:5173/
+-> <a href="http://localhost:5173/" target="_blank">http://localhost:5173/</a>
 
 ## OR
 ```bash
@@ -20,10 +20,10 @@ npm install -g http-server
 ```bash
 http-server
 ```
--> http://localhost:8080/
+-> <a href="http://localhost:8080/" target="_blank">http://localhost:8080/</a>
 
 ## For PHP Folder
 ```bash
 php -S localhost:8000
 ```
--> http://localhost:8000/
+-> <a href="http://localhost:8000/" target="_blank">http://localhost:8000/</a>
