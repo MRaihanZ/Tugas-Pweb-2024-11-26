@@ -10,18 +10,44 @@ class CommentModel extends BaseModel{
     {
         parent::__construct($username, $password, $host, $db);
     }
-    public static function getAllWithLimit($table, $select, $limit) {
-        $query = "ORDER BY id DESC LIMIT " . $limit;
+    public static function getAllWithLimit($table, $select, $start, $limit) {
+        $query = "WHERE id <= $start ORDER BY id DESC LIMIT 5;";
         $result = self::$conn->query("SELECT {$select} FROM {$table} {$query}");
-        "SELECT * FROM table ORDER BY id DESC LIMIT 5";
         if (!$result) {
             echo json_encode(['success' => false, 'code' => 500, 'body' => ["message" => "Failed to retrieve data from database"]]);
         } else {
-            $rows = [];
+            $ids = [];
+            $comments = [];
             while ($row = $result->fetch_assoc()) {
-                $rows[] = $row["comment"];
+                $comments[] = $row["comment"];
+                $ids[] = $row["id"];
+            };
+            $datas = ["id" => $ids,"comment"=> $comments];
+        };
+        return $datas;
+    }
+
+    public static function getLastIdComment($table, $select) {
+        $query = "ORDER BY id DESC LIMIT 1;";
+        $result = self::$conn->query("SELECT {$select} FROM {$table} {$query}");
+        if (!$result) {
+            echo json_encode(['success' => false, 'code' => 500, 'body' => ["message" => "Failed to retrieve data from database"]]);
+        } else {
+            $data = [];
+            while ($row = $result->fetch_assoc()) {
+                $data = ["id" => $row["id"]];
             };
         };
-        return $rows;
+        return $data;
+    }
+
+    public static function postComment($comment) {
+        $result = self::$conn->query("INSERT INTO comment (id, comment) VALUES ('','$comment')");
+        if (!$result) {
+            echo json_encode(['success' => false, 'code' => 500, 'body' => ["message" => "Failed to retrieve data from database"]]);
+        } else {
+            $data = "Comment posted successfully";
+        };
+        return $data;
     }
 }

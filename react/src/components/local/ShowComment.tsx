@@ -1,20 +1,61 @@
 import { useEffect, useRef, useState, Suspense, lazy } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area";
 import LoadingComment from "./LoadingComment";
 const ListComment = lazy(() => import("./ListComment"));
 
-
 function ShowComment() {
-    const [showDiv, setShowDiv] = useState(false);
-    const bottomRef = useRef(null);
-    // Create useEffect() soo when on mount it's fetch data
+    const [comments, setComments] = useState<{ id: string; comment: string }[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [lastId, setLastId] = useState<string | null>(null);
+    const bottomRef = useRef<HTMLDivElement | null>(null);
 
-    // called when need to be render
+    const fetchLastId = async () => {
+        try {
+            const res = await fetch("http://localhost:8000/api/v1/comment/lastid");
+            const data = await res.json();
+            return data.body.id;
+        } catch (error) {
+            console.error("Error fetching last id:", error);
+            return null;
+        }
+    };
+
+    const fetchComments = async (start: string, limit: number) => {
+        setLoading(true);
+        try {
+            const res = await fetch(
+                `http://localhost:8000/api/v1/comments/{${start}}/{${limit}}`
+            );
+            const data = await res.json();
+            setComments((prevComments) => [...prevComments, ...data.body]);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         const callback: IntersectionObserverCallback = (entries: IntersectionObserverEntry[]) => {
-            entries.forEach((entry: IntersectionObserverEntry) => {
-                if (entry.isIntersecting) {
-                    setShowDiv(true);
+            entries.forEach(async (entry) => {
+                if (entry.isIntersecting && !loading) {
+                    if (lastId === null) {
+                        const initialId = await fetchLastId();
+                        if (initialId) {
+                            setLastId(initialId);
+                            fetchComments(initialId, 5);
+                            const newLastId = (parseInt(initialId) - 5).toString();
+                            setLastId(newLastId);
+                        }
+                    } else {
+                        if (Number(lastId) <= 0) {
+                            return;
+                        } else {
+                            fetchComments(lastId, 5);
+                            const newLastId = (parseInt(lastId) - 5).toString();
+                            setLastId(newLastId);
+                        }
+                    }
                 }
             });
         };
@@ -34,23 +75,25 @@ function ShowComment() {
                 observer.unobserve(bottomRef.current);
             }
         };
-    }, []);
+    }, [lastId, loading]);
 
     return (
         <>
             <ScrollArea className="h-[25rem] pr-4">
-                <Suspense
-                    fallback={<LoadingComment />}
-                >
-                    <ListComment commentNumber={1} comment="asdfajsdlf aldsjflajfd;lajd aldsfjlajdflkajdf alsdfjlakjfdl;kajdf alsdfjlajdflakj dflakjsdf;lajsdflkajalskdjf;lajs df kasdf lasjdf jasl djalk dsjflkajsdlj" />
-                    <ListComment commentNumber={1} comment="asdfajsdlf aldsjflajfd;lajd aldsfjlajdflkajdf alsdfjlakjfdl;kajdf alsdfjlajdflakj dflakjsdf;lajsdflkajalskdjf;lajs df kasdf lasjdf jasl djalk dsjflkajsdlj" />
-                    <ListComment commentNumber={1} comment="asdfajsdlf aldsjflajfd;lajd aldsfjlajdflkajdf alsdfjlakjfdl;kajdf alsdfjlajdflakj dflakjsdf;lajsdflkajalskdjf;lajs df kasdf lasjdf jasl djalk dsjflkajsdlj" />
-                    <ListComment commentNumber={1} comment="asdfajsdlf aldsjflajfd;lajd aldsfjlajdflkajdf alsdfjlakjfdl;kajdf alsdfjlajdflakj dflakjsdf;lajsdflkajalskdjf;lajs df kasdf lasjdf jasl djalk dsjflkajsdlj" />
-                    <ListComment commentNumber={1} comment="asdfajsdlf aldsjflajfd;lajd aldsfjlajdflkajdf alsdfjlakjfdl;kajdf alsdfjlajdflakj dflakjsdf;lajsdflkajalskdjf;lajs df kasdf lasjdf jasl djalk dsjflkajsdlj" />
+                <Suspense fallback={<LoadingComment />}>
+                    {comments.map((comment, index) => (
+                        <ListComment
+                            key={`${comment.id}-${index}`}
+                            commentNumber={parseInt(comment.id)}
+                            comment={comment.comment}
+                        />
+                    ))}
                 </Suspense>
+                {loading && <LoadingComment />}
+                <div ref={bottomRef}></div>
             </ScrollArea>
         </>
-    )
+    );
 }
 
-export default ShowComment
+export default ShowComment;

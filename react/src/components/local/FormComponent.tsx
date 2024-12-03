@@ -14,7 +14,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 
 const FormSchema = z.object({
-    komentar: z
+    comment: z
         .string()
         .min(3, {
             message: "Komen harus lebih dari 3 karakter.",
@@ -29,8 +29,31 @@ function FormComponent() {
         resolver: zodResolver(FormSchema),
     })
 
-    function onSubmit(data: z.infer<typeof FormSchema>) {
+    const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
         const date = new Date()
+        console.log(data.comment);
+        try {
+            const response = await fetch("http://localhost:8000/api/v1/comment", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    data: {
+                        comment: data.comment,
+                    },
+                }),
+            });
+
+            if (response.ok) {
+                console.log("ok");
+            } else {
+                const errorData = await response.json();
+                console.log(errorData.message || "Failed to post comment. Please try again.");
+            }
+        } catch (error) {
+            console.log("An error occurred while posting your comment.");
+        }
         toast("Komentar Telah Ditambahkan.", {
             description: date.toUTCString(),
             action: {
@@ -39,14 +62,14 @@ function FormComponent() {
             },
         })
         console.log(data)
-    }
+    };
     return (
         <>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-[30rem]">
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 w-[30rem]">
                     <FormField
                         control={form.control}
-                        name="komentar"
+                        name="comment"
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="text-3xl">Komentar</FormLabel>
